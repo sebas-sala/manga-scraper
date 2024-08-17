@@ -2,7 +2,7 @@ import * as Cheerio from "cheerio";
 import WebsiteScraper from "./website-scraper";
 
 class TagsScraper extends WebsiteScraper {
-	private minQty = 2000;
+	private minQty = 1000;
 
 	private parseDataQty(dataQty: string): number {
 		if (!dataQty) return 0;
