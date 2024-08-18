@@ -5,19 +5,11 @@ import WebsiteScraper from "./website-scraper";
 
 class TagsScraper extends WebsiteScraper {
 	private MIN_QTY = 1000;
+	private tagsService: TagsService;
 
-	private parseDataQty(dataQty: string): number {
-		if (!dataQty) return 0;
-
-		const lowerCaseQty = dataQty.toLowerCase();
-		let multiplier = 1;
-
-		if (lowerCaseQty.endsWith("k")) {
-			multiplier = 1000;
-		}
-
-		const numberPart = Number(lowerCaseQty.replace(/[km]/, ""));
-		return Number.isNaN(numberPart) ? 0 : numberPart * multiplier;
+	constructor(url: string) {
+		super(url);
+		this.tagsService = new TagsService();
 	}
 
 	async parse(html: string): Promise<void> {
@@ -37,11 +29,23 @@ class TagsScraper extends WebsiteScraper {
 			})
 			.get();
 
-		const tagsService = new TagsService();
-
 		for (const tagName of filteredTagsNames) {
-			await tagsService.addBulkTags([{ name: tagName, quantity: 0 }]);
+			await this.tagsService.addBulkTags([{ name: tagName, quantity: 0 }]);
 		}
+	}
+
+	private parseDataQty(dataQty: string): number {
+		if (!dataQty) return 0;
+
+		const lowerCaseQty = dataQty.toLowerCase();
+		let multiplier = 1;
+
+		if (lowerCaseQty.endsWith("k")) {
+			multiplier = 1000;
+		}
+
+		const numberPart = Number(lowerCaseQty.replace(/[km]/, ""));
+		return Number.isNaN(numberPart) ? 0 : numberPart * multiplier;
 	}
 }
 
