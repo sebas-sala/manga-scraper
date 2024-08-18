@@ -1,8 +1,10 @@
 import * as Cheerio from "cheerio";
+
+import TagsService from "../tags/tags.service";
 import WebsiteScraper from "./website-scraper";
 
 class TagsScraper extends WebsiteScraper {
-	private minQty = 1000;
+	private MIN_QTY = 1000;
 
 	private parseDataQty(dataQty: string): number {
 		if (!dataQty) return 0;
@@ -18,7 +20,7 @@ class TagsScraper extends WebsiteScraper {
 		return Number.isNaN(numberPart) ? 0 : numberPart * multiplier;
 	}
 
-	parse(html: string): string[] {
+	async parse(html: string): Promise<void> {
 		const $ = Cheerio.load(html);
 
 		const tags = $(".filter-elem .name");
@@ -27,7 +29,7 @@ class TagsScraper extends WebsiteScraper {
 			.filter((_, tag) => {
 				const dataQty = $(tag).attr("data-qty") || "0";
 				const numericQty = this.parseDataQty(dataQty);
-				return numericQty > this.minQty;
+				return numericQty > this.MIN_QTY;
 			})
 			.map((_, tag) => {
 				const tagName = $(tag).text().trim();
@@ -35,7 +37,11 @@ class TagsScraper extends WebsiteScraper {
 			})
 			.get();
 
-		return filteredTagsNames;
+		const tagsService = new TagsService();
+
+		for (const tagName of filteredTagsNames) {
+			await tagsService.addBulkTags([{ name: tagName, quantity: 0 }]);
+		}
 	}
 }
 
